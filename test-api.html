@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .error {
+            color: red;
+            background: #ffe6e6;
+        }
+        .success {
+            color: green;
+            background: #e6ffe6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gemini API Connection Test</h1>
+        <p>Click the button below to test the Gemini API connection:</p>
+        <button onclick="testAPI()">Test API Connection</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const GEMINI_API_KEY = 'AIzaSyAfECe8OQyO6NAN6MK21hL2-evugNJ4v6Y';
+        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = 'Testing API connection...';
+            resultDiv.className = '';
+
+            try {
+                const requestBody = {
+                    contents: [{
+                        parts: [{
+                            text: "Say hello in one sentence."
+                        }]
+                    }]
+                };
+
+                console.log('Request URL:', GEMINI_API_URL);
+                console.log('Request Body:', JSON.stringify(requestBody, null, 2));
+
+                const response = await fetch(GEMINI_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                console.log('Response Status:', response.status);
+                console.log('Response Headers:', [...response.headers.entries()]);
+
+                const data = await response.json();
+                console.log('Response Data:', data);
+
+                if (!response.ok) {
+                    throw new Error(`API Error (${response.status}): ${data.error?.message || 'Unknown error'}`);
+                }
+
+                if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+                    resultDiv.className = 'success';
+                    resultDiv.textContent = `✅ SUCCESS!\n\nAPI Response:\n${data.candidates[0].content.parts[0].text}\n\nThe API is working correctly!`;
+                } else {
+                    resultDiv.className = 'error';
+                    resultDiv.textContent = `⚠️ Unexpected Response Format:\n\n${JSON.stringify(data, null, 2)}`;
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.className = 'error';
+                resultDiv.textContent = `❌ ERROR:\n\n${error.message}\n\nCheck the browser console (F12) for more details.`;
+            }
+        }
+    </script>
+</body>
+</html>
